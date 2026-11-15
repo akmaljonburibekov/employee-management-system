@@ -11,6 +11,9 @@ const departmentInput = document.getElementById("department");
 const salaryInput = document.getElementById("salary");
 const emailInput = document.getElementById("email");
 
+let editEmployeeId = null;
+let employees = [];
+
 // METHOD GET
 async function getEmployees() {
   try {
@@ -20,7 +23,7 @@ async function getEmployees() {
       throw new Error("Xodimlarni yuklashda xatolik yuz berdi");
     }
 
-    const employees = await response.json();
+    employees = await response.json();
 
     employeesList.innerHTML = "";
 
@@ -36,7 +39,11 @@ async function getEmployees() {
         <td>${employee.department}</td>
         <td>${employee.salary}</td>
         <td>${employee.email}</td>
-        <td>Actions</td>
+        <td>
+          <button class="editBtn" data-id="${employee.id}">
+             Edit
+          </button>
+        </td>
       `;
 
       employeesList.appendChild(row);
@@ -106,4 +113,30 @@ employeeForm.addEventListener("submit", async (event) => {
     console.error(error);
   }
 
+});
+
+
+
+// METHOD PUT
+employeesList.addEventListener("click", (event) => {
+  if (event.target.classList.contains("editBtn")) {
+    const employeeId = event.target.dataset.id;
+
+    editEmployeeId = employeeId;
+
+   const selectedEmployee = employees.find(
+  (employee) => employee.id === Number(employeeId)
+);
+
+firstNameInput.value = selectedEmployee.first_name;
+lastNameInput.value = selectedEmployee.last_name;
+ageInput.value = selectedEmployee.age;
+positionInput.value = selectedEmployee.position;
+departmentInput.value = selectedEmployee.department;
+salaryInput.value = selectedEmployee.salary;
+emailInput.value = selectedEmployee.email;
+
+employeeForm.hidden = false;
+overlay.hidden = false;
+  }
 });
