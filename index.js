@@ -2,6 +2,8 @@ const employeesList = document.getElementById("employeesList");
 const addEmployeeBtn = document.getElementById("addEmployeeBtn");
 const employeeForm = document.getElementById("employeeForm");
 const overlay = document.getElementById("overlay");
+const saveEmployeeBtn = document.getElementById("saveEmployeeBtn");
+const putEmployeeBtn = document.getElementById("putEmployeeBtn");
 const patchEmployeeBtn = document.getElementById("patchEmployeeBtn");
 
 const firstNameInput = document.getElementById("firstName");
@@ -63,8 +65,14 @@ getEmployees();
 addEmployeeBtn.addEventListener("click", () => {
   const isHidden = employeeForm.hidden;
 
+  employeeForm.reset();
   employeeForm.hidden = !isHidden;
   overlay.hidden = !isHidden;
+  firstNameInput.focus();
+
+  saveEmployeeBtn.hidden = false;
+  putEmployeeBtn.hidden = true;
+  patchEmployeeBtn.hidden = true;
 });
 
 
@@ -119,6 +127,51 @@ employeeForm.addEventListener("submit", async (event) => {
 
 
 // METHOD PUT
+async function updateEmployee() {
+  const employeeId = editEmployeeId;
+
+  const employeeData = {
+    firstName: firstNameInput.value.trim(),
+    lastName: lastNameInput.value.trim(),
+    age: Number(ageInput.value),
+    position: positionInput.value.trim(),
+    department: departmentInput.value.trim(),
+    salary: Number(salaryInput.value),
+    email: emailInput.value.trim()
+  };
+
+  try {
+    const response = await fetch(
+      `http://localhost:3000/employees/${employeeId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(employeeData)
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Xodim ma'lumotlarini yangilashda xatolik yuz berdi");
+    }
+    
+    const result = await response.json();
+    
+    console.log(result);
+
+    employeeForm.reset();
+
+    employeeForm.hidden = true;
+    overlay.hidden = true;
+
+    await getEmployees();
+  }
+  catch (error) {
+    console.error(error);
+  }
+  
+}
+
 employeesList.addEventListener("click", (event) => {
   if (event.target.classList.contains("editBtn")) {
     const employeeId = event.target.dataset.id;
@@ -139,9 +192,16 @@ emailInput.value = selectedEmployee.email;
 
 employeeForm.hidden = false;
 overlay.hidden = false;
+
+firstNameInput.focus();
+
+saveEmployeeBtn.hidden = true;
+putEmployeeBtn.hidden = false;
+patchEmployeeBtn.hidden = false;
   }
 });
 
+putEmployeeBtn.addEventListener("click", updateEmployee);
 
 
 // METHOD PATCH
