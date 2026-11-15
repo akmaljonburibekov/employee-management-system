@@ -39,12 +39,15 @@ import pool from "./db.js";
 
 const corsHeaders = {
   "Content-Type": "application/json",
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "http://127.0.0.1:5500",
   "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type"
 };
 
 const server = http.createServer(async (req, res) => {
+
+  console.log(req.url, req.method);
+  console.log("CORS:", corsHeaders);
 
   // OPTIONS METODI
 if (req.method === "OPTIONS") {
@@ -62,17 +65,13 @@ if (req.url === "/employees/" && req.method === "GET") {
       "SELECT * FROM employees ORDER BY id ASC"
     );
 
-    res.writeHead(200, {
-      "Content-Type": "application/json; charset=utf-8"
-    });
-
+    res.writeHead(200, corsHeaders);
     res.end(JSON.stringify(result.rows));
 
   } catch (error) {
-    res.writeHead(500, {
-      "Content-Type": "application/json; charset=utf-8"
-    });
+    console.error(error);
 
+    res.writeHead(500, corsHeaders);
     res.end(JSON.stringify({
       status: "error",
       message: error.message
