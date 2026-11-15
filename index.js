@@ -2,6 +2,7 @@ const employeesList = document.getElementById("employeesList");
 const addEmployeeBtn = document.getElementById("addEmployeeBtn");
 const employeeForm = document.getElementById("employeeForm");
 const overlay = document.getElementById("overlay");
+const patchEmployeeBtn = document.getElementById("patchEmployeeBtn");
 
 const firstNameInput = document.getElementById("firstName");
 const lastNameInput = document.getElementById("lastName");
@@ -140,3 +141,92 @@ employeeForm.hidden = false;
 overlay.hidden = false;
   }
 });
+
+
+
+// METHOD PATCH
+async function updateEmployeePartially() {
+  const employeeId = editEmployeeId;
+
+  const employeeData = {
+    firstName: firstNameInput.value.trim(),
+    lastName: lastNameInput.value.trim(),
+    age: Number(ageInput.value),
+    position: positionInput.value.trim(),
+    department: departmentInput.value.trim(),
+    salary: Number(salaryInput.value),
+    email: emailInput.value.trim()
+  };
+
+  const selectedEmployee = employees.find(
+    (employee) => employee.id === Number(employeeId)
+  );
+  
+  const changedData = {};
+
+  if (employeeData.firstName !== selectedEmployee.first_name) {
+    changedData.firstName = employeeData.firstName;
+  }
+
+  if (employeeData.lastName !== selectedEmployee.last_name) {
+    changedData.lastName = employeeData.lastName;
+  }
+
+  if (employeeData.age !== Number(selectedEmployee.age)) {
+    changedData.age = employeeData.age;
+  }
+
+  if (employeeData.position !== selectedEmployee.position) {
+    changedData.position = employeeData.position;
+  }
+
+  if (employeeData.department !== selectedEmployee.department) {
+    changedData.department = employeeData.department;
+  }
+
+  if (employeeData.salary !== Number(selectedEmployee.salary)) {
+    changedData.salary = employeeData.salary;
+  }
+
+  if (employeeData.email !== selectedEmployee.email) {
+    changedData.email = employeeData.email;
+  }
+
+  if (Object.keys(changedData).length === 0) {
+    console.log("Hech qanday ma'lumot o'zgartirilmagan");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `http://localhost:3000/employees/${employeeId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(changedData)
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Xodim ma'lumotlarini yangilashda xatolik yuz berdi");
+    }
+    
+    const result = await response.json();
+    
+    console.log(result);
+
+    employeeForm.reset();
+    employeeForm.hidden = true;
+    overlay.hidden = true;
+
+    await getEmployees();
+  
+  } catch (error) {
+    console.error(error);
+  }
+
+}
+
+patchEmployeeBtn.addEventListener("click", updateEmployeePartially);
