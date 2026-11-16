@@ -84,9 +84,11 @@ if (req.url === "/employees/" && req.method === "GET") {
 
   
        // POST SO'ROVI
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   if (req.url === "/employees/" && req.method === "POST") {
     console.log("METHOD:", req.method);
-console.log("URL:", req.url);
+    console.log("URL:", req.url);
      let body = "";
 
      req.on("data", (chunk) => {
@@ -122,7 +124,8 @@ if (typeof addUser.lastName !== "string" || addUser.lastName.trim() === "") {
 }
 
 // age
-if (!Number.isInteger(addUser.age) || addUser.age <= 0) {
+if ( !Number.isInteger(addUser.age) || addUser.age < 18 || addUser.age > 100 ) 
+{ 
   res.writeHead(400, corsHeaders);
   res.end(JSON.stringify({ message: "Yosh noto'g'ri kiritilgan" }));
   return;
@@ -150,7 +153,7 @@ if (typeof addUser.salary !== "number" || addUser.salary <= 0) {
 }
 
 // email
-if (typeof addUser.email !== "string" || !addUser.email.includes("@") || !addUser.email.includes(".")) {
+if (typeof addUser.email !== "string" || !emailRegex.test(addUser.email)) {
   res.writeHead(400, corsHeaders);
   res.end(JSON.stringify({ message: "Email noto'g'ri kiritilgan" }));
   return;
@@ -244,7 +247,9 @@ if (typeof updateData.lastName !== "string" || updateData.lastName.trim() === ""
 }
 
 // age
-if (!Number.isInteger(updateData.age) || updateData.age <= 0) {
+if (
+  !Number.isInteger(updateData.age) || updateData.age < 18 || updateData.age > 100
+) { 
   res.writeHead(400, corsHeaders);
   res.end(JSON.stringify({ message: "Yosh noto'g'ri kiritilgan" }));
   return;
@@ -273,9 +278,7 @@ if (typeof updateData.salary !== "number" || updateData.salary <= 0) {
 
 // email
 if (
-  typeof updateData.email !== "string" ||
-  !updateData.email.includes("@") ||
-  !updateData.email.includes(".")
+  typeof updateData.email !== "string" || !emailRegex.test(updateData.email)
 ) {
   res.writeHead(400, corsHeaders);
   res.end(JSON.stringify({ message: "Email noto'g'ri kiritilgan" }));
@@ -388,7 +391,8 @@ if (req.method === "PATCH" && req.url.startsWith("/employees/")) {
           }
         }
 
-        if (key === "age" && (!Number.isInteger(value) || value <= 0)) {
+        if ( key === "age" && (!Number.isInteger(value) || value < 18 || value > 100)) 
+        {
           res.writeHead(400, corsHeaders);
           res.end(JSON.stringify({ message: "Yosh noto'g'ri kiritilgan" }));
           return;
@@ -402,8 +406,7 @@ if (req.method === "PATCH" && req.url.startsWith("/employees/")) {
 
         if (key === "email" && (
           typeof value !== "string" ||
-          !value.includes("@") ||
-          !value.includes(".")
+          !emailRegex.test(value)
         )) {
           res.writeHead(400, corsHeaders);
           res.end(JSON.stringify({ message: "Email noto'g'ri kiritilgan" }));

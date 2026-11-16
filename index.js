@@ -46,6 +46,9 @@ async function getEmployees() {
           <button class="editBtn" data-id="${employee.id}">
              Edit
           </button>
+          <button class="deleteBtn" data-id="${employee.id}">
+             Delete
+          </button>
         </td>
       `;
 
@@ -290,3 +293,35 @@ async function updateEmployeePartially() {
 }
 
 patchEmployeeBtn.addEventListener("click", updateEmployeePartially);
+
+
+
+// METHOD DELETE
+employeesList.addEventListener("click", async (event) => {
+  if (event.target.classList.contains("deleteBtn")) {
+    const employeeId = event.target.dataset.id;
+
+    const isConfirmed = confirm("Haqiqatan ham bu xodimni o'chirmoqchimisiz?");
+
+    if (!isConfirmed) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/employees/${employeeId}`,
+        {
+          method: "DELETE"
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Xodimni o'chirishda xatolik yuz berdi");
+      }
+      
+      await getEmployees();
+    }
+    catch (error) {
+      console.error(error);
+    }
+  }
+
+});
