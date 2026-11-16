@@ -146,7 +146,8 @@ if (typeof addUser.department !== "string" || addUser.department.trim() === "") 
 }
 
 // salary
-if (typeof addUser.salary !== "number" || addUser.salary <= 0) {
+if  ( typeof addUser.salary !== "number" || !Number.isFinite(addUser.salary) || addUser.salary <= 0 )
+{
   res.writeHead(400, corsHeaders);
   res.end(JSON.stringify({ message: "Maosh noto'g'ri kiritilgan" }));
   return;
@@ -270,7 +271,9 @@ if (typeof updateData.department !== "string" || updateData.department.trim() ==
 }
 
 // salary
-if (typeof updateData.salary !== "number" || updateData.salary <= 0) {
+if (
+  typeof updateData.salary !== "number" || !Number.isFinite(updateData.salary) || updateData.salary <= 0 ) 
+  {
   res.writeHead(400, corsHeaders);
   res.end(JSON.stringify({ message: "Maosh noto'g'ri kiritilgan" }));
   return;
