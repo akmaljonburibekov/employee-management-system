@@ -5,6 +5,10 @@ const overlay = document.getElementById("overlay");
 const saveEmployeeBtn = document.getElementById("saveEmployeeBtn");
 const putEmployeeBtn = document.getElementById("putEmployeeBtn");
 const patchEmployeeBtn = document.getElementById("patchEmployeeBtn");
+const toast = document.getElementById("toast");
+const loading = document.getElementById("loading");
+const searchInput = document.getElementById("searchInput");
+const pagination = document.getElementById("pagination");
 
 const firstNameInput = document.getElementById("firstName");
 const lastNameInput = document.getElementById("lastName");
@@ -14,12 +18,113 @@ const departmentInput = document.getElementById("department");
 const salaryInput = document.getElementById("salary");
 const emailInput = document.getElementById("email");
 
+
 let editEmployeeId = null;
 let employees = [];
+
+// GET EMPLOYES
+function renderEmployees(employeeArray) {
+  employeesList.innerHTML = "";
+
+  if (employeeArray.length === 0) {
+    employeesList.innerHTML = `
+      <tr>
+        <td colspan="9" class="empty-state">
+          Hozircha xodimlar mavjud emas
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  // SEARCHING
+  const startIndex = (currentPage - 1) * employeesPerPage;
+  const endIndex = startIndex + employeesPerPage;
+
+  const paginatedEmployees = employeeArray.slice(startIndex, endIndex);
+
+  const totalPages = Math.ceil(
+    employeeArray.length / employeesPerPage
+  );
+  renderPagination(totalPages, employeeArray);
+
+  paginatedEmployees.forEach((employee) => {
+  const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${employee.id}</td>
+      <td>${employee.first_name}</td>
+      <td>${employee.last_name}</td>
+      <td>${employee.age}</td>
+      <td>${employee.position}</td>
+      <td>${employee.department}</td>
+      <td>${employee.salary}</td>
+      <td>${employee.email}</td>
+      <td>
+        <button class="editBtn" data-id="${employee.id}">
+          Edit
+        </button>
+        <button class="deleteBtn" data-id="${employee.id}">
+          Delete
+        </button>
+      </td>
+    `;
+
+    employeesList.appendChild(row);
+  });
+}
+
+function renderPagination(totalPages, employeeArray) {
+  pagination.innerHTML = "";
+
+  const prevButton = document.createElement("button");
+
+prevButton.textContent = "Previous";
+prevButton.disabled = currentPage === 1;
+
+prevButton.addEventListener("click", () => {
+  currentPage--;
+  renderEmployees(employeeArray);
+});
+
+pagination.appendChild(prevButton);
+
+  for (let i = 1; i <= totalPages; i++) {
+    const button = document.createElement("button");
+  
+    button.textContent = i;
+    button.classList.add("page-btn");
+
+    if (i === currentPage) {
+    button.classList.add("active");
+}
+
+    button.addEventListener("click", () => {
+      currentPage = i;
+      renderEmployees(employeeArray);
+    });
+  
+    pagination.appendChild(button);
+  }
+
+  const nextButton = document.createElement("button");
+
+nextButton.textContent = "Next";
+nextButton.disabled = currentPage === totalPages;
+
+nextButton.addEventListener("click", () => {
+  currentPage++;
+  renderEmployees(employeeArray);
+});
+
+pagination.appendChild(nextButton);
+
+}
 
 // METHOD GET
 async function getEmployees() {
   try {
+    showLoading();
     const response = await fetch("http://localhost:3000/employees/");
 
     if (!response.ok) {
@@ -28,34 +133,12 @@ async function getEmployees() {
 
     employees = await response.json();
 
-    employeesList.innerHTML = "";
+    renderEmployees(employees);
 
-    employees.forEach((employee) => {
-      const row = document.createElement("tr");
-
-      row.innerHTML = `
-        <td>${employee.id}</td>
-        <td>${employee.first_name}</td>
-        <td>${employee.last_name}</td>
-        <td>${employee.age}</td>
-        <td>${employee.position}</td>
-        <td>${employee.department}</td>
-        <td>${employee.salary}</td>
-        <td>${employee.email}</td>
-        <td>
-          <button class="editBtn" data-id="${employee.id}">
-             Edit
-          </button>
-          <button class="deleteBtn" data-id="${employee.id}">
-             Delete
-          </button>
-        </td>
-      `;
-
-      employeesList.appendChild(row);
-    });
   } catch (error) {
     console.error(error);
+  } finally {
+    hideLoading();
   }
 }
 
@@ -97,8 +180,51 @@ employeeForm.addEventListener("submit", async (event) => {
     salary: Number(salaryInput.value),
     email: emailInput.value.trim()
   };
+
+  // INPUT VALIDATION
+  if (
+    !employeeData.firstName ||
+    !employeeData.lastName ||
+    !employeeData.age ||
+    !employeeData.position ||
+    !employeeData.department ||
+    !employeeData.salary ||
+    !employeeData.email
+  ) {
+    alert("Iltimos, barcha maydonlarni to'ldiring!");
+    return;
+  }
+
+  // AGE VALIDATION
+  if (
+    !Number.isInteger(employeeData.age) ||
+    employeeData.age < 18 ||
+    employeeData.age > 100
+  ) {
+    alert("Yosh 18 dan 100 gacha bo'lishi kerak!");
+    return;
+  }
+
+  // SALARY VALIDATION
+  if (
+    !Number.isFinite(employeeData.salary) ||
+    employeeData.salary <= 0
+  ) {
+    alert("Maosh 0 dan katta bo'lishi kerak!");
+    return;
+  }
+
+  // EMAIL VALIDATION
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+if (!emailPattern.test(employeeData.email)) {
+  alert("Iltimos, to'g'ri email manzilini kiriting!");
+  return;
+}
+
   
   try {
+    showLoading();
     const response = await fetch("http://localhost:3000/employees/", {
       method: "POST",
       headers: {
@@ -119,10 +245,12 @@ employeeForm.addEventListener("submit", async (event) => {
    overlay.hidden = true;
    await getEmployees();
   
-    console.log(result);
+   showToast("Xodim muvaffaqiyatli qo'shildi!");
   
   } catch (error) {
     console.error(error);
+  } finally {
+    hideLoading();
   }
 
 });
@@ -144,6 +272,7 @@ async function updateEmployee() {
   };
 
   try {
+    showLoading();
     const response = await fetch(
       `http://localhost:3000/employees/${employeeId}`,
       {
@@ -171,6 +300,8 @@ async function updateEmployee() {
   }
   catch (error) {
     console.error(error);
+  }  finally {
+    hideLoading();
   }
   
 }
@@ -261,6 +392,7 @@ async function updateEmployeePartially() {
   }
 
   try {
+    showLoading();
     const response = await fetch(
       `http://localhost:3000/employees/${employeeId}`,
       {
@@ -288,6 +420,8 @@ async function updateEmployeePartially() {
   
   } catch (error) {
     console.error(error);
+  }  finally {
+    hideLoading();
   }
 
 }
@@ -306,6 +440,7 @@ employeesList.addEventListener("click", async (event) => {
     if (!isConfirmed) return;
 
     try {
+      showLoading();
       const response = await fetch(
         `http://localhost:3000/employees/${employeeId}`,
         {
@@ -321,7 +456,60 @@ employeesList.addEventListener("click", async (event) => {
     }
     catch (error) {
       console.error(error);
+    }  finally {
+      hideLoading();
     }
   }
 
 });
+
+
+function showToast(message, type = "success") {
+  toast.textContent = message;
+  toast.className = type;
+  toast.style.display = "block";
+
+  setTimeout(() => {
+    toast.style.display = "none";
+  }, 3000);
+}
+
+showToast("Salom! Toast muvaffaqiyatli ishladi.");
+showToast("Xodim qo'shildi!", "success");
+showToast("Xatolik yuz berdi!", "error");
+showToast("Ma'lumot yuklanmoqda...", "info");
+
+
+// LOADING
+function showLoading() {
+  loading.style.display = "block";
+}
+
+function hideLoading() {
+  loading.style.display = "none";
+}
+
+showLoading();
+
+// SEARCHING
+searchInput.addEventListener("input", () => {
+  const searchValue = searchInput.value.toLowerCase().trim();
+
+  const filteredEmployees = employees.filter((employee) => {
+    return (
+      employee.first_name.toLowerCase().startsWith(searchValue) ||
+      employee.last_name.toLowerCase().startsWith(searchValue)
+    );
+  });
+
+  currentPage = 1;
+  renderEmployees(filteredEmployees);
+});
+
+
+// PAGINATION
+const employeesPerPage = 5;
+let currentPage = 1;
+
+const startIndex = (currentPage - 1) * employeesPerPage;
+const endIndex = startIndex + employeesPerPage;

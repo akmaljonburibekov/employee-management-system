@@ -272,7 +272,7 @@ if (typeof updateData.department !== "string" || updateData.department.trim() ==
 
 // salary
 if (
-  typeof updateData.salary !== "number" || !Number.isFinite(updateData.salary) || updateData.salary <= 0 ) 
+  typeof updateData.salary !== "number" ||!Number.isFinite(updateData.salary) || updateData.salary <= 0 ) 
   {
   res.writeHead(400, corsHeaders);
   res.end(JSON.stringify({ message: "Maosh noto'g'ri kiritilgan" }));
