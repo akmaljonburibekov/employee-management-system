@@ -22,6 +22,228 @@ const emailInput = document.getElementById("email");
 let editEmployeeId = null;
 let employees = [];
 
+function validateEmployee(employeeData) {
+  if (
+    !employeeData.firstName ||
+    !employeeData.lastName ||
+    !employeeData.position ||
+    !employeeData.department ||
+    !employeeData.email
+  ) {
+    return {
+      isValid: false,
+      message: "Iltimos, barcha maydonlarni to'ldiring!"
+    };
+  }
+
+  if (
+    !Number.isInteger(employeeData.age) ||
+    employeeData.age < 18 ||
+    employeeData.age > 100
+  ) {
+    return {
+      isValid: false,
+      message: "Yosh 18 dan 100 gacha bo'lishi kerak!"
+    };
+  }
+
+  if (
+    !Number.isFinite(employeeData.salary) ||
+    employeeData.salary <= 0
+  ) {
+    return {
+      isValid: false,
+      message: "Maosh 0 dan katta bo'lishi kerak!"
+    };
+  }
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailPattern.test(employeeData.email)) {
+    return {
+      isValid: false,
+      message: "Iltimos, to'g'ri email manzilini kiriting!"
+    };
+  }
+
+  return {
+    isValid: true
+  }
+}
+
+
+// OOP
+// CLASS
+class Employee {
+  #salary;
+
+  constructor(firstName, lastName, age, position, department, salary, email) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.age = age;
+    this.position = position;
+    this.department = department;
+    this.#salary = salary;
+    this.email = email;
+  }
+  get salary() {
+    return this.#salary;
+  }
+
+  set salary(value) {
+    if(value > 0) {
+      this.#salary = value;
+    }
+  }
+
+  increaseSalary(amount) {
+    if(amount > 0) {
+      this.#salary += amount;
+    }
+  }
+
+  decreaseSalary(amount) {
+    if(amount > 0 && amount < this.#salary) {
+      this.#salary -= amount;
+    }
+  }
+
+  getInfo() {
+    return `${this.firstName} ${this.lastName} ${this.age} ${this.position} ${this.department} ${this.#salary} ${this.email}`
+  }
+
+  getRole() {
+    throw new Error("getRole() metodi voris klassda yozilishi kerak");
+  }
+}
+
+const employee1 = new Employee(
+  "Akmal",
+  "Akmaly",
+   43,
+  "Fullstack developer",
+  "IT",
+  5000000,
+  "akmaljonakmaly01@gmail.com"
+);
+
+const employee2 = new Employee(
+  "Nazokat",
+  "Nozimova",
+  25,
+  "Web designer",
+  "LG",
+  3800000,
+  "nozi@gmail.com"
+)
+
+employee1.increaseSalary(500000);
+employee2.decreaseSalary(300000);
+
+
+// INHERITANCE
+class Manager extends Employee {
+  constructor(firstName, lastName, age, position, department, salary, email, teamSize) {
+    super(firstName, lastName, age, position, department, salary, email);
+
+    this.teamSize = teamSize;
+  }
+
+  getInfo() {
+    return `${super.getInfo()} ${this.teamSize}`
+  }
+
+  getRole() {
+    return "IT Manager";
+  }
+}
+
+const manager1 = new Manager(
+  "Ali",
+  "Valiyev",
+  35,
+  "IT Manager",
+  "IT",
+  8000000,
+  "ali@gmail.com",
+  14
+);
+
+const manager2 = new Manager(
+  "Sardor",
+  "Karimov",
+  38,
+  "IT Manager",
+  "IT",
+  9000000,
+  "sardor@gmail.com",
+  12
+);
+
+class Developer extends Employee {
+  constructor(firstName, lastName, age, position, department, salary, email) {
+    super(firstName, lastName, age, position, department, salary, email);
+  }
+  getRole() {
+    return "Developer";
+  }
+}
+
+const developer1 = new Developer(
+  "Akmal",
+  "Buribekov",
+  43,
+  "Frontend Developer",
+  "IT",
+  6000000,
+  "akmal@gmail.com"
+)
+console.log(developer1.getRole());
+
+class Designer extends Employee {
+  constructor(firstName, lastName, age, position, department, salary, email) {
+    super(firstName, lastName, age, position, department, salary, email)
+  }
+
+  getRole() {
+    return "Designer";
+  }
+}
+
+const designer = new Designer(
+  "Adham",
+  "Jo'rayev",
+  40,
+  "Frontend Developer",
+  "IT",
+  6800000,
+  "asqar@gmail.com"
+)
+
+console.log(designer.getRole());
+
+const employeList = [
+  employee1,
+  developer1,
+  designer
+]
+
+employeList.forEach(employee => {
+  console.log(employee.getRole());
+})
+
+// POLYMORPHISM
+const employeeList = [
+  employee1,
+  employee2,
+  manager2
+];
+
+employeeList.forEach(employee => {
+  console.log(employee.getInfo());
+});
+
+
 // GET EMPLOYES
 function renderEmployees(employeeArray) {
   employeesList.innerHTML = "";
@@ -74,6 +296,7 @@ function renderEmployees(employeeArray) {
   });
 }
 
+// PAGINATION
 function renderPagination(totalPages, employeeArray) {
   pagination.innerHTML = "";
 
@@ -182,46 +405,12 @@ employeeForm.addEventListener("submit", async (event) => {
   };
 
   // INPUT VALIDATION
-  if (
-    !employeeData.firstName ||
-    !employeeData.lastName ||
-    !employeeData.age ||
-    !employeeData.position ||
-    !employeeData.department ||
-    !employeeData.salary ||
-    !employeeData.email
-  ) {
-    alert("Iltimos, barcha maydonlarni to'ldiring!");
-    return;
-  }
+  const validation = validateEmployee(employeeData);
 
-  // AGE VALIDATION
-  if (
-    !Number.isInteger(employeeData.age) ||
-    employeeData.age < 18 ||
-    employeeData.age > 100
-  ) {
-    alert("Yosh 18 dan 100 gacha bo'lishi kerak!");
-    return;
-  }
-
-  // SALARY VALIDATION
-  if (
-    !Number.isFinite(employeeData.salary) ||
-    employeeData.salary <= 0
-  ) {
-    alert("Maosh 0 dan katta bo'lishi kerak!");
-    return;
-  }
-
-  // EMAIL VALIDATION
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-if (!emailPattern.test(employeeData.email)) {
-  alert("Iltimos, to'g'ri email manzilini kiriting!");
+if (!validation.isValid) {
+  alert(validation.message);
   return;
 }
-
   
   try {
     showLoading();
@@ -270,6 +459,13 @@ async function updateEmployee() {
     salary: Number(salaryInput.value),
     email: emailInput.value.trim()
   };
+
+    const validation = validateEmployee(employeeData);
+
+  if (!validation.isValid) {
+    alert(validation.message);
+    return;
+  }
 
   try {
     showLoading();
@@ -351,6 +547,13 @@ async function updateEmployeePartially() {
     salary: Number(salaryInput.value),
     email: emailInput.value.trim()
   };
+  
+  const validation = validateEmployee(employeeData);
+
+if (!validation.isValid) {
+  alert(validation.message);
+  return;
+}
 
   const selectedEmployee = employees.find(
     (employee) => employee.id === Number(employeeId)
