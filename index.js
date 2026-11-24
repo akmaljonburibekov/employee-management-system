@@ -10,6 +10,10 @@ const loading = document.getElementById("loading");
 const searchInput = document.getElementById("searchInput");
 const pagination = document.getElementById("pagination");
 
+const employeeCountElement = document.getElementById("employeeCount");
+const totalSalaryElement = document.getElementById("totalSalary");
+const averageSalaryElement = document.getElementById("averageSalary");
+
 const firstNameInput = document.getElementById("firstName");
 const lastNameInput = document.getElementById("lastName");
 const ageInput = document.getElementById("age");
@@ -223,7 +227,6 @@ const designer = new Designer(
 console.log(designer.getRole());
 
 const employeList = [
-  employee1,
   developer1,
   designer
 ]
@@ -355,11 +358,13 @@ async function getEmployees() {
     }
 
     employees = await response.json();
+    calculateEmployeeStatistics();
 
     renderEmployees(employees);
 
   } catch (error) {
     console.error(error);
+    showToast("Xodimlarni yuklashda xatolik yuz berdi!", "error");
   } finally {
     hideLoading();
   }
@@ -367,6 +372,26 @@ async function getEmployees() {
 
 getEmployees();
 
+// STATISTIKA
+function calculateEmployeeStatistics() {
+  const totalSalary = employees.reduce((total, employee) => {
+    return total + Number(employee.salary);
+  }, 0);
+
+  const averageSalary = employees.length
+    ? totalSalary / employees.length
+    : 0;
+
+  const employeeCount = employees.length;
+
+  console.log("Jami maosh:", totalSalary);
+  console.log("O‘rtacha maosh:", averageSalary);
+  console.log("Xodimlar soni:", employeeCount);
+
+  employeeCountElement.textContent = employeeCount;
+  totalSalaryElement.textContent = totalSalary;
+  averageSalaryElement.textContent = averageSalary.toFixed(2);
+}
 
 
 
@@ -438,6 +463,7 @@ if (!validation.isValid) {
   
   } catch (error) {
     console.error(error);
+    showToast("Xodimni qo'shishda xatolik yuz berdi!", "error");
   } finally {
     hideLoading();
   }
@@ -496,6 +522,7 @@ async function updateEmployee() {
   }
   catch (error) {
     console.error(error);
+    showToast("Xodim ma'lumotlarini yangilashda xatolik yuz berdi!", "error");
   }  finally {
     hideLoading();
   }
@@ -623,6 +650,7 @@ if (!validation.isValid) {
   
   } catch (error) {
     console.error(error);
+    showToast("Xodim ma'lumotlarini qisman yangilashda xatolik yuz berdi!", "error");
   }  finally {
     hideLoading();
   }
@@ -656,9 +684,9 @@ employeesList.addEventListener("click", async (event) => {
       }
       
       await getEmployees();
-    }
-    catch (error) {
+    } catch (error) {
       console.error(error);
+      showToast("Xodimni o'chirishda xatolik yuz berdi!", "error");
     }  finally {
       hideLoading();
     }
@@ -677,11 +705,6 @@ function showToast(message, type = "success") {
   }, 3000);
 }
 
-showToast("Salom! Toast muvaffaqiyatli ishladi.");
-showToast("Xodim qo'shildi!", "success");
-showToast("Xatolik yuz berdi!", "error");
-showToast("Ma'lumot yuklanmoqda...", "info");
-
 
 // LOADING
 function showLoading() {
@@ -692,10 +715,23 @@ function hideLoading() {
   loading.style.display = "none";
 }
 
-showLoading();
+
+// DEBOUNCE
+let searchTimer;
+
+function debounce(callback, delay) {
+  return function () {
+    clearTimeout(searchTimer);
+
+    searchTimer = setTimeout(() => {
+      callback();
+    }, delay);
+  };
+}
+
 
 // SEARCHING
-searchInput.addEventListener("input", () => {
+searchInput.addEventListener("input", debounce(() => {
   const searchValue = searchInput.value.toLowerCase().trim();
 
   const filteredEmployees = employees.filter((employee) => {
@@ -707,7 +743,7 @@ searchInput.addEventListener("input", () => {
 
   currentPage = 1;
   renderEmployees(filteredEmployees);
-});
+}, 500));
 
 
 // PAGINATION
@@ -715,4 +751,4 @@ const employeesPerPage = 5;
 let currentPage = 1;
 
 const startIndex = (currentPage - 1) * employeesPerPage;
-const endIndex = startIndex + employeesPerPage;
+const endIndex = startIndex + employeesPerPage;fshow

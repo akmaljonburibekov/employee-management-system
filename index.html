@@ -75,23 +75,43 @@
 
       </form>
 
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Age</th>
-            <th>Position</th>
-            <th>Department</th>
-            <th>Salary</th>
-            <th>Email</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="employeesList">
-        </tbody>
-      </table>
+      <!-- EMPLOYEE STATISTICS -->
+      <div class="statistics">
+        <div class="stat-card">
+          <h3>Xodimlar soni</h3>
+          <p id="employeeCount">0</p>
+        </div>
+
+        <div class="stat-card">
+          <h3>Jami maosh</h3>
+          <p id="totalSalary">0</p>
+        </div>
+
+        <div class="stat-card">
+          <h3>O‘rtacha maosh</h3>
+          <p id="averageSalary">0</p>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Age</th>
+              <th>Position</th>
+              <th>Department</th>
+              <th>Salary</th>
+              <th>Email</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="employeesList">
+          </tbody>
+        </table>
+      </div>
       <!-- Pagination shu yerda -->
       <div id="pagination" class="pagination"></div>
     </section>
