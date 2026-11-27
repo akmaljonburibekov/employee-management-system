@@ -1,5 +1,8 @@
 {
   "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
   "dependencies": {
     "dotenv": "^18.0.10",
     "pg": "^8.23.1"

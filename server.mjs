@@ -497,6 +497,8 @@ if (req.method === "PATCH" && req.url.startsWith("/employees/")) {
 });
 
 
-server.listen(3000, () => {
-  console.log("Server 3000-portda ishga tushdi");
+const PORT = process.env.PORT || 3000;
+
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server ${PORT}-portda ishga tushdi`);
 });
